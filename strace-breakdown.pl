@@ -12,9 +12,14 @@ use Data::Dumper;
 my ($startTime, $endTime) = ('','');
 my ($wallClockTime,$totalCountedTime)=(0,0);
 
+use constant COUNT_IDX => 0;
+use constant ELAPSED_IDX => 1;
+use constant MIN_IDX => 2;
+use constant MAX_IDX => 3;
+
 =head %calls
 
-$calls { callName => [ count, elapsed ] }
+$calls { callName => [ count, elapsed, min, max ] }
 
 =cut
 
@@ -61,8 +66,20 @@ while (<>) {
 	$elapsed =~ s/[<>]//g;
 	#print "elapsed: $elapsed\n";
 
-	$calls{$syscall}[0]++;
-	$calls{$syscall}[1] += $elapsed;
+	$calls{$syscall}[COUNT_IDX]++;
+	$calls{$syscall}[ELAPSED_IDX] += $elapsed;
+
+	if ( defined( $calls{$syscall}[MIN_IDX] )) {
+		if ( $elapsed < $calls{$syscall}[MIN_IDX] ) { $calls{$syscall}[MIN_IDX] = $elapsed }
+	} else {
+		$calls{$syscall}[MIN_IDX] = $elapsed ;
+	}
+
+	if ( defined( $calls{$syscall}[MAX_IDX] )) {
+		if ( $elapsed > $calls{$syscall}[MAX_IDX] ) { $calls{$syscall}[MAX_IDX] = $elapsed }
+	} else {
+		$calls{$syscall}[MAX_IDX] = $elapsed ;
+	}
 
 	$totalCountedTime += $elapsed;
 	
@@ -84,12 +101,21 @@ printf qq{
 	, $unAccountedForTime;
 
 
-printf "      %20s %11s      %11s        %11s\n", 'Call',  'Count', 'Elapsed', 'Avg ms';
+printf "      %20s %11s      %11s        %11s     %11s     %11s\n", 'Call',  'Count', 'Elapsed', 'Min', 'Max', 'Avg ms';
 
 
 foreach my $syscall ( sort { $calls{$a}[1] <=> $calls{$b}[1] } keys %calls ) {
 
-	printf "      %20s   %9d   %14.6f   %16.8f\n", $syscall, $calls{$syscall}[0], $calls{$syscall}[1], $calls{$syscall}[1] > 0 ? ($calls{$syscall}[1] / $calls{$syscall}[0]) * 1000 : 0;
+	printf "      %20s   %9d   %16.6f   %14.6f  %14.6f  %14.6f\n"
+		, $syscall
+		, $calls{$syscall}[COUNT_IDX]
+		, $calls{$syscall}[ELAPSED_IDX]
+		, $calls{$syscall}[MIN_IDX]
+		, $calls{$syscall}[MAX_IDX]
+		, $calls{$syscall}[ELAPSED_IDX] > 0 ? ($calls{$syscall}[ELAPSED_IDX] / $calls{$syscall}[COUNT_IDX]) * 1000 : 0; # avg
 
 }
+
+
+
 
