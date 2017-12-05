@@ -3,7 +3,16 @@
 use strict;
 use warnings;
 use Data::Dumper;
+use Getopt::Long;
 
+
+my $useHistograms=0;
+
+GetOptions (
+	"histograms!" => \$useHistograms
+) or die usage(1);
+
+#die "using histograms \n" if $useHistograms;
 
 # strace must have used the -ttt and -T options
 # eg. strace -T -ttt -f ping -c1 google.com
@@ -32,6 +41,7 @@ my %calls=();
 my $pidChk=1;
 my $shiftPid=0;
 
+my %histograms=();
 
 while (<>) {
 
@@ -81,6 +91,8 @@ while (<>) {
 		$calls{$syscall}[MAX_IDX] = $elapsed ;
 	}
 
+	push @{$histograms{$syscall}} , $elapsed if $useHistograms;
+
 	$totalCountedTime += $elapsed;
 	
 }
@@ -117,5 +129,43 @@ foreach my $syscall ( sort { $calls{$a}[1] <=> $calls{$b}[1] } keys %calls ) {
 }
 
 
+#print Dumper(\%histograms);
 
+if ($useHistograms) {
+	# use the index from the main data
+	foreach my $syscall ( sort { $calls{$a}[1] <=> $calls{$b}[1] } keys %calls ) {
+		#print "Syscall: $syscall\n\t";
+		#print "Count: " , $#{$histograms{$syscall}} + 1 , "\n";
+		processHistBucket($calls{$syscall}[MIN_IDX], $calls{$syscall}[MAX_IDX], @{$histograms{$syscall}});
+	}
+}
+
+
+sub getHistBucketCount {
+	my( $minVal, $maxVal, $count) = @_;
+
+	# need at least 5 values for histogram
+	if ($count < 5) { return 1 }
+	else {
+		return 5;
+	}
+
+}
+
+sub processHistBucket {
+	my $minVal = shift;
+	my $maxVal = shift;
+	my @ary = @_;
+
+	#my @ary = @{$aryRef};
+
+	my $bucketCount = getHistBucketCount($minVal, $maxVal, $#ary);
+
+	#print "bucketCount: $bucketCount\n";
+	#
+
+	# WIP
+	# foreach my $bucket in ( 
+	
+}
 
