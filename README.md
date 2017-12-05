@@ -94,7 +94,9 @@ Here are a couple of simple strace profilers with sample results
 
 Create a test file
 
+```shell
   dd if=/dev/zero bs=4096 count=25000 of=/mnt/common/temp/bigfile.dat 
+```
 
  
 The tracefile cp-with-PID.trc will have a PID as the first column
