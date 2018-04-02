@@ -172,3 +172,84 @@ FETCH: FETCH #139665751367648:c=0,e=3,p=0,cr=4,cu=0,mis=0,r=1,dep=1,og=1,plh=327
 
 
 
+# sprof.pl
+
+Profile an strace file
+
+```shell
+
+strace -tt -T -f -o ls.trc ls -l 
+
+./sprof.pl --file ls.trc
+
+>  ./sprof.pl --file ls.trc
+=== arch_prctl ===
+   count: 1
+   time : 0.000002
+=== close ===
+   count: 42
+   time : 0.000118
+=== execve ===
+   count: 12
+   time : 0.001656
+=== fstat ===
+   count: 35
+   time : 0.000100
+=== getdents ===
+   count: 2
+   time : 0.000012
+=== getrlimit ===
+   count: 5
+   time : 0.000015
+=== ioctl ===
+   count: 2
+   time : 0.000008
+=== lseek ===
+   count: 5
+   time : 0.000011
+=== lstat ===
+   count: 9
+   time : 0.000030
+=== mprotect ===
+   count: 34
+   time : 0.000244
+=== munmap ===
+   count: 6
+   time : 0.000042
+=== open ===
+   count: 18
+   time : 0.000099
+=== read ===
+   count: 15
+   time : 0.000072
+=== rt_sigaction ===
+   count: 2
+   time : 0.000005
+=== rt_sigprocmask ===
+   count: 1
+   time : 0.000002
+=== set_robust_list ===
+   count: 1
+   time : 0.000003
+=== set_tid_address ===
+   count: 1
+   time : 0.000002
+=== socket ===
+   count: 8
+   time : 0.000038
+=== stat ===
+   count: 3
+   time : 0.000021
+=== write ===
+   count: 4
+   time : 0.000600
+
+
+Elapsed Seconds: 0.004365
+SyscallTime    : 0.003080
+Unaccounted For: 0.001285
+
+Unaccounted For Time: 10046 overhead, strace overhead, db time
+```
+
+
