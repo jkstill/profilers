@@ -3,10 +3,9 @@
 use strict;
 
 # strace must have used the -ttt and -T options
-# eg. strace -T -ttt -f ping -c1 google.com
-
+# eg. strace -T [ -tt -ttt] -f ping -c1 google.com
+# with -tt there is the possibility of error of the time rolls over past midnight
 # reads from STDIN
-
 
 my ($startTime, $endTime) = ('','');
 my ($wallClockTime,$totalCountedTime)=(0,0);
@@ -17,6 +16,7 @@ my ($wallClockTime,$totalCountedTime)=(0,0);
 
 my $pidChk=1;
 my $shiftPid=0;
+my $timeFormat='';
 
 while (<>) {
 
@@ -34,8 +34,24 @@ while (<>) {
 
 	shift @a if $shiftPid;
 
-	$startTime = $a[0] unless $startTime;
-	$endTime = $a[0];
+	# determine if the time format ia hh:mm:ss.ffffff
+	# or epoch.ffffff
+	unless ( $timeFormat ) {
+		if ( $a[0] =~ /[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}\.[[:digit:]]{6}/ ) { $timeFormat='ISO8601' }
+		else { $timeFormat='epoch' }
+	};
+
+	if ( $timeFormat eq 'epoch') {
+		$startTime = $a[0] unless $startTime;
+		$endTime = $a[0];
+	} else {
+		#warn "Time Format: $timeFormat\n";
+		$startTime = convtime($a[0]) unless $startTime;
+		$endTime = convtime($a[0]);
+		#warn "Start Time: $startTime\n";
+		#warn "  End Time: $endTime\n";
+	}
+
 
 	#print "EndTime $endTime\n";
 
@@ -61,5 +77,11 @@ printf qq{
 	, $totalCountedTime
 	, $wallClockTime
 	, $unAccountedForTime;
+
+# convert a timestamp such as  08:38:16.809792 to seconds.fractional-seconds
+sub convtime {
+	my ($hours, $minutes, $seconds) = split(/:/,$_[0]);
+	return ($hours * 3600) + ($minutes * 60) + $seconds;
+}
 
 
