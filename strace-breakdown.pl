@@ -130,7 +130,7 @@ foreach my $syscall ( sort { $calls{$a}[1] <=> $calls{$b}[1] } keys %calls ) {
 		, $calls{$syscall}[ELAPSED_IDX]
 		, $calls{$syscall}[MIN_IDX]
 		, $calls{$syscall}[MAX_IDX]
-		, $calls{$syscall}[ELAPSED_IDX] > 0 ? ($calls{$syscall}[ELAPSED_IDX] / $calls{$syscall}[COUNT_IDX]) * 1000 : 0; # avg
+		, $calls{$syscall}[ELAPSED_IDX] > 0 ? ($calls{$syscall}[ELAPSED_IDX] / $calls{$syscall}[COUNT_IDX]) : 0; # avg
 
 }
 
